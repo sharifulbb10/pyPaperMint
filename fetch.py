@@ -61,7 +61,7 @@ def prepare_search_others(value):
     n = len(value.split(" "))
     for i, word in enumerate(value.split(" ")):
         if i != n-1:
-            txt += "\"" + word + "\""+ " AND"
+            txt += "\" " + word + "\""+ "AND"
         elif i == n-1:
             txt += " " + "\"" + word + "\""
     return txt
