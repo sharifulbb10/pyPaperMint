@@ -14,7 +14,7 @@ CHANGE YOUR DIRECTORY TO 'pyPaperMint' FOLDER:
 
 IN THE TERMINAL, RUN THIS SCRIPT:
     python3 fetch.py --search 'textile' --maximum 50 --db arxiv --file_name yourFileName.xlsx
-    
+
     (change 'textile' to what you want to search,
     you can omit --start 0
     '--db arxiv' or '--db others' command is mandatory)
@@ -28,12 +28,24 @@ IF YOU NEED HELP, TYPE:
     python3 fetch.py -h
 '''
 
+
+# In[ ]:
+
+
 # !pip install -r requirements.txt
+
+
+# In[ ]:
+
 
 import feedparser
 import argparse
 import pandas as pd
 import requests
+
+
+# In[ ]:
+
 
 def lowercase(value):
     return value.lower()
@@ -65,7 +77,11 @@ def to_text(list_):
             text +=i
     return text 
 
-parser = argparse.ArgumentParser(description="YOU SHOULD SEARCH IN THIS FORMAT: \npython3 fetch.py --search 'your keywords' --maximum 10 --db arxiv --as 'file-name.xlsx' \n\nYOU CAN LOOK FOR HELP BY TYPING:\nfetch.py -h")
+
+# In[ ]:
+
+
+parser = argparse.ArgumentParser(description="YOU SHOULD SEARCH IN THIS FORMAT: \npython3 fetch.py --search 'your keywords' --start 0 --maximum 10 --db arxiv --as 'file-name.xlsx' \n\nYOU CAN LOOK FOR HELP BY TYPING:\nfetch.py -h")
 
 parser.add_argument("-s","--search", required = True, help = "the keyword or verbose you want to search\nExample: --search 'artificial intelligence in textile production'")
 parser.add_argument("--start", default = 0, help = "first paper that you want accept from the search result. Let's say it is 5, this means, you want to accept result from 5th instance from your search.")
@@ -73,10 +89,17 @@ parser.add_argument("-m", "--maximum", default = 10, help = "maximum number of s
 parser.add_argument("--db", choices=['arxiv', 'others'], type=lowercase, help="select your database, where you want to run your query. Choose either arXiv, or PubMed.")
 parser.add_argument("-f", "--file_name", default="search-result.xlsx", help="your file name")
 
-# args = parser.parse_args(['--search', 'ai', '--start', '0', '--maximum', '450', '--db', 'arxiv'])
+# args = parser.parse_args(['--search', 'ai', '--start', '0', '--maximum', '1000', '--db', 'others'])
 args = parser.parse_args()
 
+
+# In[ ]:
+
+
 def arxiv_search():
+
+    print('fetching searches ...\n\n')
+
     url = f"http://export.arxiv.org/api/query?search_query={prepare_search(args.search)}&start={args.start}&max_results={args.maximum}"
     feed = feedparser.parse(url)
 
@@ -104,7 +127,13 @@ def arxiv_search():
     print(df)
     df.to_excel(f"{(args.file_name).split('.')[0]}_arXiv.xlsx", index = False)
 
+
+# In[ ]:
+
+
 def openAlex_search():
+
+    print('fetching searches ...\n\n')
 
     published_date = list()
     title = list()
@@ -139,10 +168,21 @@ def openAlex_search():
         text = " ".join(word_list)
         return text
 
+    def file_creation():
+        df = pd.DataFrame([
+            published_date, title, abstract, authors_list, doi
+        ], index = ['Published_Date', 'Title', 'Abstract', 'Authors', 'DOI'])
+        df = df.T
+        df.to_excel(f"{(args.file_name).split('.')[0]}_openAlex.xlsx", index = False)
+
     for i in range(1, int(args.maximum)//200+2):
         if i == int(args.maximum)//200+1:
             max_ = int(args.maximum)%200
             print('max_', max_)
+            if max_ == 0 and i!=1:
+                file_creation()
+                return 1
+
         else:
             max_ = 200
             print(i, 'max_', max_)
@@ -177,12 +217,11 @@ def openAlex_search():
             authors_list.append((to_text(authors_of_paper)).replace('\n',' '))
             doi.append(entry['doi'])
 
-    df = pd.DataFrame([
-        published_date, title, abstract, authors_list, doi
-    ], index = ['Published_Date', 'Title', 'Abstract', 'Authors', 'DOI'])
-    df = df.T
+    file_creation()
 
-    df.to_excel(f"{(args.file_name).split('.')[0]}_openAlex.xlsx", index = False)
+
+# In[ ]:
+
 
 if args.db=='arxiv':
     arxiv_search()
