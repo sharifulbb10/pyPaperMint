@@ -25,4 +25,6 @@ If you want, you can use a shorter version of the previous terminal command as w
 <pre>cd ./your-folder-path</pre>
 3. Clone this github project:<br/>
 <pre>git clone https://github.com/sharifulbb10/pyPaperMint.git</pre>
-4. Then, follow the above-mentioned search strategy, to extract scholarly articles in which way you want!
+4. Go to the project folder:<br/>
+<pre>cd ./pyPaperMint</pre>
+5. Then, follow the above-mentioned search strategy, to extract scholarly articles in which way you want!
